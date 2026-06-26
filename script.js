@@ -26,6 +26,7 @@ const appState = {
     convertedCanvas: null,
     isProcessing: false,
     currentFileName: null,
+    currentFilter: 'black_white',
     fileData: {
         name: null,
         size: null,
@@ -45,6 +46,8 @@ const DOM = {
     fileSize: document.getElementById('fileSize'),
     fileDimensions: document.getElementById('fileDimensions'),
     previewSection: document.getElementById('previewSection'),
+    filterSection: document.getElementById('filterSection'),
+    filterBtns: document.querySelectorAll('.filter-btn'),
     actionSection: document.getElementById('actionSection'),
     originalCanvas: document.getElementById('originalCanvas'),
     convertedCanvas: document.getElementById('convertedCanvas'),
@@ -150,8 +153,9 @@ function handleFileUpload(file) {
                     // Draw original image on canvas
                     drawOriginalImage(img);
 
-                    // Show preview and action sections
+                    // Show preview, filter, and action sections
                     DOM.previewSection.style.display = 'block';
+                    if (DOM.filterSection) DOM.filterSection.style.display = 'block';
                     DOM.actionSection.style.display = 'block';
                     DOM.convertBtn.style.display = 'inline-flex';
                     DOM.downloadBtn.style.display = 'none';
@@ -228,10 +232,9 @@ function drawOriginalImage(img) {
 }
 
 /**
- * Applies grayscale filter to the image using Canvas API
- * Uses the formula: Gray = (Red × 0.299) + (Green × 0.587) + (Blue × 0.114)
+ * Applies the selected filter to the image using Canvas API
  */
-function convertToGrayscale() {
+function applyFilter() {
     return new Promise((resolve, reject) => {
         try {
             if (!appState.originalImage) {
@@ -262,21 +265,55 @@ function convertToGrayscale() {
                     const imageData = ctx.getImageData(0, 0, width, height);
                     const data = imageData.data;
 
-                    // Apply grayscale conversion using optimized loop
-                    // Process 4 bytes at a time (RGBA)
+                    const filter = appState.currentFilter;
+
                     for (let i = 0; i < data.length; i += 4) {
-                        const r = data[i];
-                        const g = data[i + 1];
-                        const b = data[i + 2];
+                        let r = data[i];
+                        let g = data[i + 1];
+                        let b = data[i + 2];
 
-                        // Grayscale formula (standard luminosity formula)
-                        const gray = Math.round(r * 0.299 + g * 0.587 + b * 0.114);
+                        if (filter === 'black_white') {
+                            const gray = r * 0.299 + g * 0.587 + b * 0.114;
+                            r = g = b = gray;
+                        } else if (filter === 'warm') {
+                            r += 30; g += 10; b -= 20;
+                        } else if (filter === 'cool') {
+                            r -= 20; g += 10; b += 30;
+                        } else if (filter === 'vintage') {
+                            r *= 1.2; g *= 1.1; b *= 0.8;
+                        } else if (filter === 'sepia') {
+                            const tr = 0.393 * r + 0.769 * g + 0.189 * b;
+                            const tg = 0.349 * r + 0.686 * g + 0.168 * b;
+                            const tb = 0.272 * r + 0.534 * g + 0.131 * b;
+                            r = tr; g = tg; b = tb;
+                        } else if (filter === 'high_contrast') {
+                            const factor = (259 * (128 + 255)) / (255 * (259 - 128));
+                            r = factor * (r - 128) + 128;
+                            g = factor * (g - 128) + 128;
+                            b = factor * (b - 128) + 128;
+                        } else if (filter === 'bright') {
+                            r += 40; g += 40; b += 40;
+                        } else if (filter === 'dark') {
+                            r -= 40; g -= 40; b -= 40;
+                        } else if (filter === 'vivid') {
+                            const gray = r * 0.299 + g * 0.587 + b * 0.114;
+                            r += (r - gray) * 0.5;
+                            g += (g - gray) * 0.5;
+                            b += (b - gray) * 0.5;
+                        } else if (filter === 'cinematic') {
+                            r = r * 1.1 + 10;
+                            g *= 0.95;
+                            b = b * 0.8 - 10;
+                            const factor = 1.2;
+                            r = factor * (r - 128) + 128;
+                            g = factor * (g - 128) + 128;
+                            b = factor * (b - 128) + 128;
+                        }
 
-                        // Set all RGB channels to gray value
-                        data[i] = gray;       // Red
-                        data[i + 1] = gray;   // Green
-                        data[i + 2] = gray;   // Blue
-                        // data[i + 3] unchanged (Alpha channel)
+                        // Clamp and assign back
+                        data[i] = Math.min(255, Math.max(0, r));
+                        data[i + 1] = Math.min(255, Math.max(0, g));
+                        data[i + 2] = Math.min(255, Math.max(0, b));
                     }
 
                     // Put modified image data back on canvas
@@ -289,7 +326,7 @@ function convertToGrayscale() {
                     // Show download button
                     DOM.downloadBtn.style.display = 'inline-flex';
 
-                    showNotification('Image converted to black & white successfully!', 'success');
+                    showNotification('Filter applied successfully!', 'success');
                     resolve();
                 } catch (error) {
                     DOM.loadingSpinner.style.display = 'none';
@@ -398,6 +435,17 @@ function setupEventListeners() {
         }
     });
 
+    // Filter buttons
+    if (DOM.filterBtns) {
+        DOM.filterBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                DOM.filterBtns.forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                appState.currentFilter = btn.dataset.filter;
+            });
+        });
+    }
+
     // Convert button
     DOM.convertBtn.addEventListener('click', async () => {
         if (appState.isProcessing) {
@@ -407,7 +455,7 @@ function setupEventListeners() {
 
         try {
             DOM.convertBtn.disabled = true;
-            await convertToGrayscale();
+            await applyFilter();
         } catch (error) {
             handleError('Conversion failed', error);
         } finally {
@@ -528,6 +576,7 @@ function resetApplication() {
         appState.originalCanvas = null;
         appState.convertedCanvas = null;
         appState.currentFileName = null;
+        appState.currentFilter = 'black_white';
         appState.fileData = {
             name: null,
             size: null,
@@ -551,8 +600,15 @@ function resetApplication() {
         // Hide sections
         DOM.fileInfo.style.display = 'none';
         DOM.previewSection.style.display = 'none';
+        if (DOM.filterSection) DOM.filterSection.style.display = 'none';
         DOM.actionSection.style.display = 'none';
         DOM.loadingSpinner.style.display = 'none';
+
+        // Reset filter selection
+        if (DOM.filterBtns) {
+            DOM.filterBtns.forEach(b => b.classList.remove('active'));
+            if (DOM.filterBtns[0]) DOM.filterBtns[0].classList.add('active');
+        }
 
         // Reset button states
         DOM.convertBtn.style.display = 'inline-flex';
