@@ -7,7 +7,7 @@
     <meta name="description"
         content="MonoVision - Convert color images to stunning black & white instantly. Free, fast, and works completely offline.">
     <meta name="theme-color" content="#1a1a2e">
-    <title>MonoVision | Image to Black & White Converter</title>
+    <title>MonoVision | Image Filter Converter</title>
     <link rel="stylesheet" href="style.css">
 </head>
 
@@ -24,7 +24,7 @@
                 </svg>
                 <h1 class="site-title">MonoVision</h1>
             </div>
-            <p class="site-subtitle">Convert Color Images to Stunning Black & White Instantly</p>
+            <p class="site-subtitle">Apply Stunning Filters to Your Images Instantly</p>
         </div>
     </header>
 
@@ -84,7 +84,7 @@
 
                     <!-- Converted Image Card -->
                     <div class="image-card">
-                        <h3 class="card-title">Black & White</h3>
+                        <h3 class="card-title">Filtered Image</h3>
                         <div class="image-wrapper">
                             <canvas id="convertedCanvas" class="preview-canvas" role="img"
                                 aria-label="Converted black and white image preview"></canvas>
@@ -96,7 +96,54 @@
                 <div class="loading-spinner" id="loadingSpinner" style="display: none;" role="status"
                     aria-label="Processing image">
                     <div class="spinner-ring"></div>
-                    <p class="loading-text">Converting to black & white...</p>
+                    <p class="loading-text">Applying filter...</p>
+                </div>
+            </section>
+
+            <!-- Filter Section -->
+            <section class="filter-section" id="filterSection" style="display: none;" aria-labelledby="filter-title">
+                <h2 id="filter-title" class="section-title">Choose Filter</h2>
+                <div class="filter-options">
+                    <button class="filter-btn active" data-filter="black_white" aria-label="Apply Black & White filter">
+                        <span class="filter-icon">🖤</span>
+                        <span class="filter-name">Black & White</span>
+                    </button>
+                    <button class="filter-btn" data-filter="warm" aria-label="Apply Warm filter">
+                        <span class="filter-icon">🌅</span>
+                        <span class="filter-name">Warm</span>
+                    </button>
+                    <button class="filter-btn" data-filter="cool" aria-label="Apply Cool filter">
+                        <span class="filter-icon">❄️</span>
+                        <span class="filter-name">Cool</span>
+                    </button>
+                    <button class="filter-btn" data-filter="vintage" aria-label="Apply Vintage/Old filter">
+                        <span class="filter-icon">📼</span>
+                        <span class="filter-name">Vintage/Old</span>
+                    </button>
+                    <button class="filter-btn" data-filter="sepia" aria-label="Apply Sepia filter">
+                        <span class="filter-icon">🌈</span>
+                        <span class="filter-name">Sepia</span>
+                    </button>
+                    <button class="filter-btn" data-filter="high_contrast" aria-label="Apply High Contrast filter">
+                        <span class="filter-icon">✨</span>
+                        <span class="filter-name">High Contrast</span>
+                    </button>
+                    <button class="filter-btn" data-filter="bright" aria-label="Apply Bright filter">
+                        <span class="filter-icon">☀️</span>
+                        <span class="filter-name">Bright</span>
+                    </button>
+                    <button class="filter-btn" data-filter="dark" aria-label="Apply Dark filter">
+                        <span class="filter-icon">🌙</span>
+                        <span class="filter-name">Dark</span>
+                    </button>
+                    <button class="filter-btn" data-filter="vivid" aria-label="Apply Vivid filter">
+                        <span class="filter-icon">🎭</span>
+                        <span class="filter-name">Vivid</span>
+                    </button>
+                    <button class="filter-btn" data-filter="cinematic" aria-label="Apply Cinematic filter">
+                        <span class="filter-icon">🎬</span>
+                        <span class="filter-name">Cinematic</span>
+                    </button>
                 </div>
             </section>
 
@@ -105,8 +152,8 @@
                 <h2 id="action-title" class="sr-only">Image Conversion Actions</h2>
 
                 <div class="button-group">
-                    <button id="convertBtn" class="btn btn-primary" aria-label="Convert image to black and white">
-                        <span class="btn-text">Convert to Black & White</span>
+                    <button id="convertBtn" class="btn btn-primary" aria-label="Apply selected filter">
+                        <span class="btn-text">Apply Filter</span>
                     </button>
 
                     <button id="downloadBtn" class="btn btn-success" style="display: none;"
