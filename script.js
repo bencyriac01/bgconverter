@@ -49,6 +49,9 @@ const DOM = {
     filterSection: document.getElementById('filterSection'),
     filterBtns: document.querySelectorAll('.filter-btn'),
     actionSection: document.getElementById('actionSection'),
+    compressionContainer: document.getElementById('compressionContainer'),
+    compressionSlider: document.getElementById('compressionSlider'),
+    compressionValue: document.getElementById('compressionValue'),
     originalCanvas: document.getElementById('originalCanvas'),
     convertedCanvas: document.getElementById('convertedCanvas'),
     convertBtn: document.getElementById('convertBtn'),
@@ -322,9 +325,10 @@ function applyFilter() {
                     // Hide loading spinner
                     DOM.loadingSpinner.style.display = 'none';
                     appState.isProcessing = false;
-
-                    // Show download button
                     DOM.downloadBtn.style.display = 'inline-flex';
+                    if (DOM.compressionContainer) {
+                        DOM.compressionContainer.style.display = 'block';
+                    }
 
                     showNotification('Filter applied successfully!', 'success');
                     resolve();
@@ -355,12 +359,13 @@ function downloadImage() {
             throw new Error('No converted image available');
         }
 
+        const quality = DOM.compressionSlider ? parseInt(DOM.compressionSlider.value) / 100 : 0.9;
         const link = document.createElement('a');
         const filename = appState.currentFileName
-            ? appState.currentFileName.replace(/\.[^/.]+$/, '_bw.png')
-            : 'converted_bw.png';
+            ? appState.currentFileName.replace(/\.[^/.]+$/, '_filtered.jpg')
+            : 'filtered_image.jpg';
 
-        link.href = DOM.convertedCanvas.toDataURL('image/png');
+        link.href = DOM.convertedCanvas.toDataURL('image/jpeg', quality);
         link.download = filename;
 
         // Trigger download
@@ -368,7 +373,8 @@ function downloadImage() {
         link.click();
         document.body.removeChild(link);
 
-        showNotification(`Image downloaded as ${filename}`, 'success');
+        const qualityPercent = DOM.compressionSlider ? DOM.compressionSlider.value : 90;
+        showNotification(`Image downloaded as ${filename} (Quality: ${qualityPercent}%)`, 'success');
     } catch (error) {
         handleError('Download failed', error);
     }
@@ -462,6 +468,15 @@ function setupEventListeners() {
             DOM.convertBtn.disabled = false;
         }
     });
+
+    // Compression slider interaction
+    if (DOM.compressionSlider) {
+        DOM.compressionSlider.addEventListener('input', (e) => {
+            if (DOM.compressionValue) {
+                DOM.compressionValue.textContent = e.target.value;
+            }
+        });
+    }
 
     // Download button
     DOM.downloadBtn.addEventListener('click', () => {
@@ -602,12 +617,19 @@ function resetApplication() {
         DOM.previewSection.style.display = 'none';
         if (DOM.filterSection) DOM.filterSection.style.display = 'none';
         DOM.actionSection.style.display = 'none';
+        if (DOM.compressionContainer) DOM.compressionContainer.style.display = 'none';
         DOM.loadingSpinner.style.display = 'none';
 
         // Reset filter selection
         if (DOM.filterBtns) {
             DOM.filterBtns.forEach(b => b.classList.remove('active'));
             if (DOM.filterBtns[0]) DOM.filterBtns[0].classList.add('active');
+        }
+        
+        // Reset compression slider
+        if (DOM.compressionSlider) {
+            DOM.compressionSlider.value = 90;
+            if (DOM.compressionValue) DOM.compressionValue.textContent = 90;
         }
 
         // Reset button states

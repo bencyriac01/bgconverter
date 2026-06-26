@@ -151,6 +151,15 @@
             <section class="action-section" id="actionSection" style="display: none;" aria-labelledby="action-title">
                 <h2 id="action-title" class="sr-only">Image Conversion Actions</h2>
 
+                <!-- Compression Control -->
+                <div class="compression-container" id="compressionContainer" style="display: none;">
+                    <div class="compression-header">
+                        <label for="compressionSlider" class="compression-label">Compression Quality: <span id="compressionValue">90</span>%</label>
+                    </div>
+                    <input type="range" id="compressionSlider" class="compression-slider" min="1" max="100" value="90" step="1" aria-label="Select compression quality">
+                    <p class="compression-help">Lower quality results in smaller file sizes (saved as JPEG).</p>
+                </div>
+
                 <div class="button-group">
                     <button id="convertBtn" class="btn btn-primary" aria-label="Apply selected filter">
                         <span class="btn-text">Apply Filter</span>
